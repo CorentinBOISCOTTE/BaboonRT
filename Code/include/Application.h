@@ -4,17 +4,23 @@
 #include <cstdint>
 #include <vector>
 
+class Sphere;
+class RayTracer;
+
 class Application
 {
 public:
 	Application() = default;
 	~Application() = default;
-	void Initialize(uint16_t width, uint16_t height);
+	Application(const uint16_t width, const uint16_t height)
+	: m_width(width), m_height(height), m_window(nullptr) {}
+
+	void Initialize(const std::vector<Sphere>& spheres);
 	void Update();
 
 private:
-	uint16_t m_width;
-	uint16_t m_height;
+	uint16_t m_width = 1280;
+	uint16_t m_height = 720;
 	GLFWwindow* m_window;
     GLuint m_texture = 0;
     GLuint m_vao = 0;
@@ -23,8 +29,9 @@ private:
     GLuint m_shader = 0;
 
     std::vector<uint32_t> m_framebuffer;
+	RayTracer* m_rayTracer = nullptr;
 
-    static void Terminate();
+    void Terminate() const;
     void CloseWindowInput() const;
 
     void InitScreenQuad();

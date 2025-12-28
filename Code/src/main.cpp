@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "Application.h"
+#include "Sphere.h"
+#include "glm/vec3.hpp"
 #include "spdlog/spdlog.h"
 
 int main()
@@ -12,9 +14,13 @@ int main()
 	spdlog::info("Release Build");
 #endif
 
-	Application app;
+	Sphere sphere1(1.0f, glm::vec3(0.0f, 0.0f, -5.0f));
 
-	app.Initialize(1280, 720);
+	const std::vector<Sphere> spheres = { sphere1 };
+
+	Application app(1280, 720);
+
+	app.Initialize(spheres);
 
 	app.Update();
 

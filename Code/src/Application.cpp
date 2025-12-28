@@ -9,17 +9,17 @@
 #include <cstdlib>
 #include <ctime>
 
+#include "RayTracer.h"
+#include "Sphere.h"
 #include "spdlog/spdlog.h"
 
-void Application::Initialize(uint16_t width, uint16_t height)
+void Application::Initialize(const std::vector<Sphere>& spheres)
 {
-	m_width = width;
-	m_height = height;
-
 	if (!glfwInit())
 		return;
 
 	m_window = glfwCreateWindow(m_width, m_height, "BaboonRT", nullptr, nullptr);
+	m_rayTracer = new RayTracer(spheres);
 
 	if (!m_window)
 	{
@@ -72,24 +72,7 @@ void Application::Update()
 	{
 		CloseWindowInput();
 
-		// Render to framebuffer
-		for (uint32_t y = 0; y < m_height; y++)
-		{
-			for (uint32_t x = 0; x < m_width; x++)
-			{
-				//uint8_t r = uint8_t(float(x) / m_width * 255);
-				//uint8_t g = uint8_t(float(y) / m_height * 255);
-				//m_framebuffer[y * m_width + x] =
-				//	0xFF000000 | (g << 8) | r;
-
-				uint8_t r = std::rand() % 256; // random 0-255
-				uint8_t g = std::rand() % 256;
-				uint8_t b = std::rand() % 256;
-
-				m_framebuffer[y * m_width + x] =
-					0xFF000000 | (b << 16) | (g << 8) | r;
-			}
-		}
+		m_rayTracer->Render(m_width, m_height, m_framebuffer);
 
 		// Upload pixels
 		glBindTexture(GL_TEXTURE_2D, m_texture);
@@ -120,8 +103,9 @@ void Application::Update()
 	}
 }
 
-void Application::Terminate()
+void Application::Terminate() const
 {
+	delete m_rayTracer;
 	glfwTerminate();
 }
 
