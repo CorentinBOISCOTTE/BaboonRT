@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "Color.h"
+
 class Sphere;
 class RayTracer;
 
@@ -28,7 +30,7 @@ private:
     GLuint m_ebo = 0;
     GLuint m_shader = 0;
 
-    std::vector<uint32_t> m_framebuffer;
+    std::vector<Color> m_framebuffer;
 	RayTracer* m_rayTracer = nullptr;
 
     void Terminate() const;
