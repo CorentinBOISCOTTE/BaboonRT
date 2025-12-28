@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "Application.h"
 #include "spdlog/spdlog.h"
 
 int main()
@@ -11,6 +12,11 @@ int main()
 	spdlog::info("Release Build");
 #endif
 
-	std::cout << "Hello, World!\n";
+	Application app;
+
+	app.Initialize(1280, 720);
+
+	app.Update();
+
 	return 0;
 }

@@ -16,3 +16,12 @@ add_subdirectory(glm)
 
 # ----------- SPDLOG ----------- #
 add_subdirectory(spdlog)
+
+# ----------- GLAD ----------- #
+add_library(glad STATIC
+   glad/src/glad.c
+)
+
+target_include_directories(glad SYSTEM PUBLIC
+    glad/include
+)

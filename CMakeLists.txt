@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.29.0)
 
-project(BaboonRT VERSION 1.0.0 LANGUAGES CXX)
-set(CMAKE_C_COMPILER_WORKS TRUE)
+project(BaboonRT VERSION 1.0.0 LANGUAGES C CXX)
 
 # --------------------------------------- #
 #              FIND PACKAGES              #
@@ -45,9 +44,9 @@ target_compile_features(RayTracer PUBLIC cxx_std_23)
 
 if (MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
-    target_compile_options(RayTracer PUBLIC /W4 /WX)
+    target_compile_options(RayTracer PRIVATE /W4 /WX)
 else ()
-    target_compile_options(RayTracer PUBLIC -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(RayTracer PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif ()
 
 # Build position independent code.
@@ -64,4 +63,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #---------------------------------------#
 add_subdirectory(Libs)
 
-target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog)
+find_package(OpenGL REQUIRED)
+
+target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL)
+target_link_libraries(RayTracer PRIVATE glad)
+target_compile_definitions(RayTracer PUBLIC GLAD_GL_IMPLEMENTATION)
