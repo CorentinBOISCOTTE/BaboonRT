@@ -7,3 +7,6 @@
 [submodule "Libs/spdlog"]
 	path = Libs/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "Libs/KQueue"]
+	path = Libs/KQueue
+	url = https://github.com/Kayou-Corporation/KQueue.git
