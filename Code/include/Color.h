@@ -3,7 +3,7 @@
 
 using Color = uint32_t;
 
-inline uint32_t RGBA(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 255)
+inline Color RGBA(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 255)
 {
     return (a << 24) | (b << 16) | (g << 8) | r;
 }

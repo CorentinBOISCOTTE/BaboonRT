@@ -18,7 +18,7 @@ int main()
 
 	const std::vector<Sphere> spheres = { sphere1 };
 
-	Application app(1280, 720);
+	Application app(640, 480);
 
 	app.Initialize(spheres);
 
