@@ -1,6 +1,8 @@
 #pragma once
 #include "glm/vec3.hpp"
 
+class Ray;
+
 class Sphere
 {
 	public:
@@ -11,6 +13,8 @@ class Sphere
 
 	[[nodiscard]] float GetRadius() const { return m_radius; }
 	[[nodiscard]] glm::vec3 GetCenter() const { return m_center; }
+
+	float Hit(const Ray& ray) const;
 
 private:
 	float m_radius = 1.0f;

@@ -72,7 +72,7 @@ void Application::Update()
 	{
 		CloseWindowInput();
 
-		m_rayTracer->Render(m_width, m_height, m_framebuffer);
+		m_rayTracer->Render(m_width, m_height, m_framebuffer, m_camera);
 
 		// Upload pixels
 		glBindTexture(GL_TEXTURE_2D, m_texture);
@@ -105,6 +105,7 @@ void Application::Update()
 
 void Application::Terminate() const
 {
+	delete m_camera;
 	delete m_rayTracer;
 	glfwTerminate();
 }

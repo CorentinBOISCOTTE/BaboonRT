@@ -4,7 +4,9 @@
 #include <cstdint>
 #include <vector>
 
+#include "Camera.h"
 #include "Color.h"
+#include "glm/vec3.hpp"
 
 class Sphere;
 class RayTracer;
@@ -14,8 +16,11 @@ class Application
 public:
 	Application() = default;
 	~Application() = default;
-	Application(const uint16_t width, const uint16_t height)
-	: m_width(width), m_height(height), m_window(nullptr) {}
+	Application(const uint16_t width, const uint16_t height, const float viewportHeight, const glm::vec3& center, const float focalLength = 1.f)
+        : m_width(width), m_height(height), m_window(nullptr)
+	{
+        m_camera = new Camera(width, height, viewportHeight, center, focalLength);
+    }
 
 	void Initialize(const std::vector<Sphere>& spheres);
 	void Update();
@@ -32,6 +37,7 @@ private:
 
     std::vector<Color> m_framebuffer;
 	RayTracer* m_rayTracer = nullptr;
+	Camera* m_camera = nullptr;
 
     void Terminate() const;
     void CloseWindowInput() const;
