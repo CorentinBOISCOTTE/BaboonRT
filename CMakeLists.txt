@@ -65,7 +65,7 @@ add_subdirectory(Libs)
 
 find_package(OpenGL REQUIRED)
 
-target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL KQUEUE)
+target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL)
 target_link_libraries(RayTracer PRIVATE glad)
 target_compile_definitions(RayTracer PUBLIC GLAD_GL_IMPLEMENTATION)
 

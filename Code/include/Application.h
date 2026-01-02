@@ -6,7 +6,9 @@
 
 #include "Camera.h"
 #include "Color.h"
+#include "ThreadPool.h"
 #include "glm/vec3.hpp"
+#include "Sphere.h"
 
 class Sphere;
 class RayTracer;
@@ -16,10 +18,11 @@ class Application
 public:
 	Application() = default;
 	~Application() = default;
-	Application(const uint16_t width, const uint16_t height, const float viewportHeight, const glm::vec3& center, const float focalLength = 1.f)
+	Application(uint32_t numThreads, const uint16_t width, const uint16_t height, const float viewportHeight, const glm::vec3& center, const float focalLength = 1.f)
         : m_width(width), m_height(height), m_window(nullptr)
 	{
         m_camera = new Camera(width, height, viewportHeight, center, focalLength);
+		m_threadPool = new ThreadPool(numThreads);
     }
 
 	void Initialize(const std::vector<Sphere>& spheres);
@@ -36,11 +39,20 @@ private:
     GLuint m_shader = 0;
 
     std::vector<Color> m_framebuffer;
+    std::vector<Sphere> m_spheres;
 	RayTracer* m_rayTracer = nullptr;
 	Camera* m_camera = nullptr;
+	ThreadPool* m_threadPool = nullptr;
+
+    float m_deltaTime = 0.f;
+    std::chrono::steady_clock::time_point m_lastTime;
+
+	// TODO: Remove test
+    float m_test = 0.f;
 
     void Terminate() const;
     void CloseWindowInput() const;
+    void UpdateDeltaTime();
 
     void InitScreenQuad();
     void InitTexture();

@@ -25,6 +25,3 @@ add_library(glad STATIC
 target_include_directories(glad SYSTEM PUBLIC
     glad/include
 )
-
-# ----------- KQUEUE ----------- #
-add_subdirectory(KQUEUE)

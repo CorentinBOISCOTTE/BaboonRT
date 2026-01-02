@@ -10,7 +10,7 @@
 #include <ctime>
 
 #include "RayTracer.h"
-#include "Sphere.h"
+
 #include "spdlog/spdlog.h"
 
 void Application::Initialize(const std::vector<Sphere>& spheres)
@@ -18,8 +18,10 @@ void Application::Initialize(const std::vector<Sphere>& spheres)
 	if (!glfwInit())
 		return;
 
+	m_spheres = spheres;
+
 	m_window = glfwCreateWindow(m_width, m_height, "BaboonRT", nullptr, nullptr);
-	m_rayTracer = new RayTracer(spheres);
+	m_rayTracer = new RayTracer();
 
 	if (!m_window)
 	{
@@ -71,8 +73,14 @@ void Application::Update()
 	while (!glfwWindowShouldClose(m_window))
 	{
 		CloseWindowInput();
+		UpdateDeltaTime();
 
-		m_rayTracer->Render(m_width, m_height, m_framebuffer, m_camera);
+		// TODO: Remove test
+		m_test += m_deltaTime;
+
+		m_spheres[0].SetPosition(glm::vec3(0.f, std::cosf(m_test), -5.f));
+
+		m_rayTracer->Render(m_width, m_height, m_framebuffer, m_camera, m_threadPool, m_spheres);
 
 		// Upload pixels
 		glBindTexture(GL_TEXTURE_2D, m_texture);
@@ -106,6 +114,8 @@ void Application::Update()
 void Application::Terminate() const
 {
 	delete m_camera;
+	m_threadPool->WaitUntilFinished();
+	delete m_threadPool;
 	delete m_rayTracer;
 	glfwTerminate();
 }
@@ -115,6 +125,13 @@ void Application::CloseWindowInput() const
 	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(m_window, true);
 
+}
+
+void Application::UpdateDeltaTime()
+{
+	auto t_now = std::chrono::high_resolution_clock::now();
+	m_deltaTime = std::chrono::duration<float>(t_now - m_lastTime).count();
+	m_lastTime = t_now;
 }
 
 void Application::InitScreenQuad()

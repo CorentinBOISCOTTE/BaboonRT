@@ -18,7 +18,7 @@ int main()
 
 	const std::vector<Sphere> spheres = { sphere1 };
 
-	Application app(640, 480, 2.f, glm::vec3(0.f));
+	Application app(std::thread::hardware_concurrency() - 1, 640, 480, 2.f, glm::vec3(0.f));
 
 	app.Initialize(spheres);
 
