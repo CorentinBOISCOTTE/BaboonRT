@@ -13,15 +13,15 @@
 
 #include "spdlog/spdlog.h"
 
-void Application::Initialize(const std::vector<Sphere>& spheres)
+void Application::Initialize(const HittableList& world, int samplesPerPixel)
 {
 	if (!glfwInit())
 		return;
 
-	m_spheres = spheres;
+	m_world = world;
 
 	m_window = glfwCreateWindow(m_width, m_height, "BaboonRT", nullptr, nullptr);
-	m_rayTracer = new RayTracer();
+	m_rayTracer = new RayTracer(samplesPerPixel);
 
 	if (!m_window)
 	{
@@ -30,6 +30,7 @@ void Application::Initialize(const std::vector<Sphere>& spheres)
 	}
 
 	glfwMakeContextCurrent(m_window);
+	glfwSwapInterval(0);
 	glfwSetFramebufferSizeCallback(m_window, FramebufferSizeCallback);
 
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
@@ -78,9 +79,7 @@ void Application::Update()
 		// TODO: Remove test
 		m_test += m_deltaTime;
 
-		m_spheres[0].SetPosition(glm::vec3(0.f, std::cosf(m_test), -5.f));
-
-		m_rayTracer->Render(m_width, m_height, m_framebuffer, m_camera, m_threadPool, m_spheres);
+		m_rayTracer->Render(m_width, m_height, m_framebuffer, m_camera, m_threadPool, m_world);
 
 		// Upload pixels
 		glBindTexture(GL_TEXTURE_2D, m_texture);

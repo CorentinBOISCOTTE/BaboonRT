@@ -3,6 +3,7 @@
 #include "Color.h"
 #include "glm/vec3.hpp"
 
+class Hittable;
 class Sphere;
 
 class Ray
@@ -20,7 +21,7 @@ class Ray
 		return m_origin + t * m_direction;
 	}
 
-	Color RayColor(const std::vector<Sphere>& spheres);
+	void RayColor(const Hittable& world, float& r, float& g, float &b);
 private:
 	glm::vec3 m_origin = glm::vec3(0.0f);
 	glm::vec3 m_direction = glm::vec3(0.0f, 0.0f, -1.0f);

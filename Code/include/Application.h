@@ -6,6 +6,7 @@
 
 #include "Camera.h"
 #include "Color.h"
+#include "HittableList.h"
 #include "ThreadPool.h"
 #include "glm/vec3.hpp"
 #include "Sphere.h"
@@ -25,7 +26,7 @@ public:
 		m_threadPool = new ThreadPool(numThreads);
     }
 
-	void Initialize(const std::vector<Sphere>& spheres);
+	void Initialize(const HittableList& world, int samplesPerPixel);
 	void Update();
 
 private:
@@ -39,7 +40,7 @@ private:
     GLuint m_shader = 0;
 
     std::vector<Color> m_framebuffer;
-    std::vector<Sphere> m_spheres;
+    HittableList m_world;
 	RayTracer* m_rayTracer = nullptr;
 	Camera* m_camera = nullptr;
 	ThreadPool* m_threadPool = nullptr;

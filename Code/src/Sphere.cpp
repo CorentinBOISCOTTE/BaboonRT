@@ -3,13 +3,36 @@
 #include "Ray.h"
 #include "glm/detail/func_geometric.inl"
 
-float Sphere::Hit(const Ray& ray) const
+bool Sphere::Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const
 {
-	glm::vec3 oc = ray.GetOrigin() - m_center;
-	float a = glm::dot(ray.GetDirection(), ray.GetDirection());
-	float b = 2.0f * glm::dot(oc, ray.GetDirection());
-	float c = glm::dot(oc, oc) - m_radius * m_radius;
-	float discriminant = b * b - 4 * a * c;
+	const float directionLength = static_cast<float>(glm::length(ray.GetDirection()));
 
-	return (discriminant < 0) ? -1.0f : (-b - sqrt(discriminant)) / (2.0f * a);
+	const glm::vec3 oc = m_center - ray.GetOrigin();
+	const float ocLength = static_cast<float>(glm::length(oc));
+
+	const float a = directionLength * directionLength;
+	const float h = glm::dot(oc, ray.GetDirection());
+	const float c = ocLength * ocLength - m_radius * m_radius;
+
+	const float discriminant = h * h - a * c;
+	if (discriminant < 0)
+		return false;
+
+	const float discSqrt = sqrtf(discriminant);
+
+	float root = (h - discSqrt) / a;
+	if (!interval.Surrounds(root))
+	{
+		root = (h + discSqrt) / a;
+		if (!interval.Surrounds(root))
+			return false;
+	}
+
+	rec.t = root;
+	rec.p = ray.At(rec.t);
+	rec.normal = (rec.p - m_center) / m_radius;
+	const glm::vec3 outwardNormal = (rec.p - m_center) / m_radius;
+	rec.SetFaceNormal(ray, outwardNormal);
+
+	return true;
 }

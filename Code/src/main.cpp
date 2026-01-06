@@ -14,13 +14,14 @@ int main()
 	spdlog::info("Release Build");
 #endif
 
-	Sphere sphere1(1.0f, glm::vec3(0.0f, 0.0f, -5.0f));
+	HittableList world;
 
-	const std::vector<Sphere> spheres = { sphere1 };
+	world.Add(std::make_shared<Sphere>(glm::vec3(0, 0, -1), 0.5));
+	world.Add(std::make_shared<Sphere>(glm::vec3(0, -100.5, -1), 100));
 
 	Application app(std::thread::hardware_concurrency() - 1, 640, 480, 2.f, glm::vec3(0.f));
 
-	app.Initialize(spheres);
+	app.Initialize(world, 10);
 
 	app.Update();
 

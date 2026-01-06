@@ -3,26 +3,23 @@
 #include "Sphere.h"
 #include "glm/detail/func_geometric.inl"
 
-Color Ray::RayColor(const std::vector<Sphere>& spheres)
+void Ray::RayColor(const Hittable& world, float& r, float& g, float& b)
 {
+	HitRecord rec;
 
-	for (const Sphere& sphere : spheres)
+	if (world.Hit(*this, Interval(0, infinity), rec)) 
 	{
-		float t = sphere.Hit(*this);
-		if (t > 0.0f)
-		{
-			glm::vec3 normal = glm::normalize(At(t) - sphere.GetCenter());
-			uint8_t r = static_cast<uint8_t>(0.5 * (normal.x + 1.0) * 255);
-			uint8_t g = static_cast<uint8_t>(0.5 * (normal.y + 1.0) * 255);
-			uint8_t b = static_cast<uint8_t>(0.5 * (normal.z + 1.0) * 255);
-			return RGBA(r, g, b);
-		}
+		const glm::vec3 normal = rec.normal;
+		r += 0.5f * (normal.x + 1.0f);
+		g += 0.5f * (normal.y + 1.f);
+		b += 0.5f * (normal.z + 1.f);
 	}
-
-    glm::vec3 normalizedDir = glm::normalize(m_direction);
-    auto a = 0.5 * (normalizedDir.y + 1.0);
-	const uint8_t r = static_cast<uint8_t>((1.0 - a) * 255 + a * 128);
-	const uint8_t g = static_cast<uint8_t>((1.0 - a) * 255 + a * 179);
-	const uint8_t b = static_cast<uint8_t>((1.0 - a) * 255 + a * 255);
-	return RGBA(r, g, b);
+	else
+	{
+		glm::vec3 normalizedDir = glm::normalize(m_direction);
+		const float a = 0.5f * (normalizedDir.y + 1.f);
+		r += (1.f - a) + a * 0.5f;
+		g += (1.f - a) + a * 0.7f;
+		b += (1.f - a) + a * 1.f;
+	}
 }
