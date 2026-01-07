@@ -13,15 +13,17 @@
 
 #include "spdlog/spdlog.h"
 
-void Application::Initialize(const HittableList& world, int samplesPerPixel)
+void Application::Initialize(const HittableList& world, int samplesPerPixel, int rayDepth)
 {
 	if (!glfwInit())
 		return;
 
 	m_world = world;
 
+	m_lastTime = std::chrono::high_resolution_clock::now();
+
 	m_window = glfwCreateWindow(m_width, m_height, "BaboonRT", nullptr, nullptr);
-	m_rayTracer = new RayTracer(samplesPerPixel);
+	m_rayTracer = new RayTracer(samplesPerPixel, rayDepth);
 
 	if (!m_window)
 	{
@@ -73,11 +75,10 @@ void Application::Update()
 {
 	while (!glfwWindowShouldClose(m_window))
 	{
+		glfwPollEvents();
 		CloseWindowInput();
 		UpdateDeltaTime();
-
-		// TODO: Remove test
-		m_test += m_deltaTime;
+		CameraInput();
 
 		m_rayTracer->Render(m_width, m_height, m_framebuffer, m_camera, m_threadPool, m_world);
 
@@ -106,16 +107,28 @@ void Application::Update()
 		DrawScreen();
 
 		glfwSwapBuffers(m_window);
-		glfwPollEvents();
 	}
+
+	Terminate();
 }
 
 void Application::Terminate() const
 {
+	if (m_window)
+	{
+		glfwDestroyWindow(m_window);
+	}
+
 	delete m_camera;
-	m_threadPool->WaitUntilFinished();
-	delete m_threadPool;
+
+	if (m_threadPool)
+	{
+		m_threadPool->WaitUntilFinished();
+		delete m_threadPool;
+	}
+
 	delete m_rayTracer;
+
 	glfwTerminate();
 }
 
@@ -124,6 +137,22 @@ void Application::CloseWindowInput() const
 	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(m_window, true);
 
+}
+
+void Application::CameraInput() const
+{
+	glm::vec3 move = glm::vec3(0.f);
+
+	if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS)
+		move.z -= 5.f;
+	if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		move.z += 5.f;
+	if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		move.x += 5.f;
+	if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		move.x -= 5.f;
+
+	m_camera->Move(move * m_deltaTime);
 }
 
 void Application::UpdateDeltaTime()

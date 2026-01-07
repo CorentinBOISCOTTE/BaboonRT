@@ -26,7 +26,7 @@ public:
 		m_threadPool = new ThreadPool(numThreads);
     }
 
-	void Initialize(const HittableList& world, int samplesPerPixel);
+	void Initialize(const HittableList& world, int samplesPerPixel, int rayDepth);
 	void Update();
 
 private:
@@ -48,11 +48,9 @@ private:
     float m_deltaTime = 0.f;
     std::chrono::steady_clock::time_point m_lastTime;
 
-	// TODO: Remove test
-    float m_test = 0.f;
-
     void Terminate() const;
     void CloseWindowInput() const;
+    void CameraInput() const;
     void UpdateDeltaTime();
 
     void InitScreenQuad();

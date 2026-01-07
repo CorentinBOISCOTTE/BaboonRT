@@ -20,3 +20,39 @@ inline float Clamp(const float value, const float min, const float max)
 {
 	return std::min(std::max(value, min), max);
 }
+
+inline glm::vec3 RandomUnitVector()
+{
+    constexpr float kMinLenSqr = std::numeric_limits<float>::min();
+
+    while (true)
+    {
+        const glm::vec3 p = glm::vec3(
+            RandomFloat(-1.f, 1.f),
+            RandomFloat(-1.f, 1.f),
+            RandomFloat(-1.f, 1.f)
+        );
+
+        const float lenSqr = p.x * p.x + p.y * p.y + p.z * p.z;
+        if (lenSqr > 1.f)
+            continue;
+
+        if (lenSqr < kMinLenSqr)
+            continue;
+
+        return p / std::sqrt(lenSqr);
+    }
+}
+
+inline glm::vec3 RandomOnHemisphere(const glm::vec3& normal)
+{
+    const glm::vec3 inUnitSphere = RandomUnitVector();
+	const float dot = inUnitSphere.x * normal.x + inUnitSphere.y * normal.y + inUnitSphere.z * normal.z;
+
+    if (dot > 0.f)
+    {
+        return inUnitSphere;
+    }
+
+	return -inUnitSphere;
+}

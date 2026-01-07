@@ -15,6 +15,8 @@ public:
 	[[nodiscard]] const glm::vec3& GetCenter() const { return m_center; }
 	[[nodiscard]] const glm::vec3& GetPixel00Loc() const { return m_pixel00Loc; }
 
+	void Move(const glm::vec3& delta) { m_center += delta; m_pixel00Loc += delta; }
+
 private:
 	float m_viewportWidth, m_viewportHeight;
 	float m_focalLength = 1.f;

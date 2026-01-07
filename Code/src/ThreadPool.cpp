@@ -31,7 +31,7 @@ void ThreadPool::Enqueue(std::function<void()> const& func)
 void ThreadPool::WaitUntilFinished()
 {
     std::unique_lock lock(m_queueMutex);
-    m_finishCondition.wait(lock, [this]() { return m_tasksRemaining.load(std::memory_order_acquire) == 0 && m_taskQueue.empty(); });
+    m_finishCondition.wait(lock, [this]() { return m_tasksRemaining.load(std::memory_order_acquire) == 0; });
 }
 
 void ThreadPool::CheckQueue()
@@ -52,7 +52,11 @@ void ThreadPool::CheckQueue()
         }
 
         task();
-        m_tasksRemaining.fetch_sub(1, std::memory_order_acq_rel);
-        m_finishCondition.notify_one();
+        const int remaining = m_tasksRemaining.fetch_sub(1, std::memory_order_acq_rel) - 1;
+        if (remaining == 0)
+        {
+            std::unique_lock lock(m_queueMutex);
+            m_finishCondition.notify_all();
+        }
     }
 }

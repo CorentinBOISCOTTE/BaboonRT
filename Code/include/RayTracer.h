@@ -12,13 +12,13 @@ class Camera;
 class RayTracer
 {
 public:
-	RayTracer(int samplesPerPixel);
+	RayTracer(int samplesPerPixel, int rayDepth);
 	~RayTracer() = default;
-	void Render(uint16_t width, uint16_t height, std::vector<Color>& framebuffer, const Camera* camera, ThreadPool* threadPool, HittableList
-	            world);
+	void Render(uint16_t width, uint16_t height, std::vector<Color>& framebuffer, const Camera* camera, ThreadPool* threadPool, const HittableList
+	            & world);
 
 private:
-	int m_samplesPerPixel;
+	int m_samplesPerPixel, m_rayDepth;
 	float pixelsSampleScale;
 
 

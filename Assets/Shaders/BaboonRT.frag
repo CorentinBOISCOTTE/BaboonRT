@@ -6,5 +6,5 @@ uniform sampler2D uScreen;
 
 void main()
 {
-    FragColor = texture(uScreen, uv);
+    FragColor = texture(uScreen, vec2(uv.x, 1.0 - uv.y));
 }
