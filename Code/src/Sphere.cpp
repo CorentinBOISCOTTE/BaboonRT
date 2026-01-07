@@ -3,6 +3,11 @@
 #include "Ray.h"
 #include "glm/detail/func_geometric.inl"
 
+Sphere::Sphere(const glm::vec3& center, const float radius, std::shared_ptr<Material> mat) : m_radius(std::fmaxf(0.f, radius)), m_center(center), m_mat(mat)
+{
+	
+}
+
 bool Sphere::Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const
 {
 	const float directionLength = static_cast<float>(glm::length(ray.GetDirection()));
@@ -33,6 +38,7 @@ bool Sphere::Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const
 	rec.normal = (rec.p - m_center) / m_radius;
 	const glm::vec3 outwardNormal = (rec.p - m_center) / m_radius;
 	rec.SetFaceNormal(ray, outwardNormal);
+	rec.mat = m_mat;
 
 	return true;
 }

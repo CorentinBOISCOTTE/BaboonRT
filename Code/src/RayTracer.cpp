@@ -53,79 +53,71 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	//	}
 	//}
 
-	//constexpr int TILE = 64;
-	//
-	//for (int ty = 0; ty < height; ty += TILE)
-	//{
-	//	for (int tx = 0; tx < width; tx += TILE)
-	//	{
-	//		threadPool->Enqueue([ty, height, tx, width, pixel00Loc, pixelWidth, pixelHeight, cameraCenter, &framebuffer, &world, this]()
-	//			{
-	//				for (int y = ty; y < std::min(ty + TILE, static_cast<int>(height)); ++y)
-	//				{
-	//					for (int x = tx; x < std::min(tx + TILE, static_cast<int>(width)); ++x)
-	//					{
-	//						float r = 0.f;
-	//						float g = 0.f;
-	//						float b = 0.f;
-	//
-	//						for (int i = 0; i < m_samplesPerPixel; ++i)
-	//						{
-	//							Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
-	//							ray.RayColor(world, 10, r, g, b);
-	//						}
-	//
-	//						const float scale = 1.0f / static_cast<float>(m_samplesPerPixel);
-	//						r *= scale;
-	//						g *= scale;
-	//						b *= scale;
-	//
-	//						//r = std::sqrt(r);
-	//						//g = std::sqrt(g);
-	//						//b = std::sqrt(b);
-	//
-	//						float min = 0.f;
-	//						float max = 0.999f;
-	//
-	//						uint8_t red = static_cast<uint8_t>(256.f * Clamp(r, min, max));
-	//						uint8_t green = static_cast<uint8_t>(256.f * Clamp(g, min, max));
-	//						uint8_t blue = static_cast<uint8_t>(256.f * Clamp(b, min, max));
-	//
-	//						framebuffer[y * width + x] = RGBA(red, green, blue);
-	//					}
-	//				}
-	//			});
-	//	}
-	//}
-
-	for (uint16_t y = 0; y < height; ++y)
+	constexpr int TILE = 64;
+	
+	for (int ty = 0; ty < height; ty += TILE)
 	{
-		threadPool->Enqueue([width, pixel00Loc, pixelWidth, y, pixelHeight, cameraCenter, &world, &framebuffer, this]()
-			{
-				for (uint16_t x = 0; x < width; ++x)
+		for (int tx = 0; tx < width; tx += TILE)
+		{
+			threadPool->Enqueue([ty, height, tx, width, pixel00Loc, pixelWidth, pixelHeight, cameraCenter, &framebuffer, &world, this]()
 				{
-					glm::vec3 pixelColor(0.0f);
-
-					for (int i = 0; i < m_samplesPerPixel; ++i)
+					for (int y = ty; y < std::min(ty + TILE, static_cast<int>(height)); ++y)
 					{
-						Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
-						pixelColor += ray.RayColor(world, m_rayDepth);
+						for (int x = tx; x < std::min(tx + TILE, static_cast<int>(width)); ++x)
+						{
+							glm::vec3 pixelColor(0.0f);
+							
+							for (int i = 0; i < m_samplesPerPixel; ++i)
+							{
+								Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
+								pixelColor += ray.RayColor(world, m_rayDepth);
+							}
+							
+							pixelColor /= static_cast<float>(m_samplesPerPixel);
+							
+							pixelColor.r = std::sqrt(pixelColor.r);
+							pixelColor.g = std::sqrt(pixelColor.g);
+							pixelColor.b = std::sqrt(pixelColor.b);
+							
+							const uint8_t r = static_cast<uint8_t>(256.f * Clamp(pixelColor.r, 0.f, 0.999f));
+							const uint8_t g = static_cast<uint8_t>(256.f * Clamp(pixelColor.g, 0.f, 0.999f));
+							const uint8_t b = static_cast<uint8_t>(256.f * Clamp(pixelColor.b, 0.f, 0.999f));
+							
+							framebuffer[y * width + x] = RGBA(r, g, b);
+						}
 					}
-
-					pixelColor /= static_cast<float>(m_samplesPerPixel);
-
-					pixelColor.r = std::sqrt(pixelColor.r);
-					pixelColor.g = std::sqrt(pixelColor.g);
-					pixelColor.b = std::sqrt(pixelColor.b);
-
-					const uint8_t r = static_cast<uint8_t>(256.f * Clamp(pixelColor.r, 0.f, 0.999f));
-					const uint8_t g = static_cast<uint8_t>(256.f * Clamp(pixelColor.g, 0.f, 0.999f));
-					const uint8_t b = static_cast<uint8_t>(256.f * Clamp(pixelColor.b, 0.f, 0.999f));
-
-					framebuffer[y * width + x] = RGBA(r, g, b);
-				}
-			});
+				});
+		}
 	}
+
+	//for (uint16_t y = 0; y < height; ++y)
+	//{
+	//	threadPool->Enqueue([width, pixel00Loc, pixelWidth, y, pixelHeight, cameraCenter, &world, &framebuffer, this]()
+	//		{
+	//			for (uint16_t x = 0; x < width; ++x)
+	//			{
+	//				glm::vec3 pixelColor(0.0f);
+	//
+	//				for (int i = 0; i < m_samplesPerPixel; ++i)
+	//				{
+	//					Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
+	//					pixelColor += ray.RayColor(world, m_rayDepth);
+	//				}
+	//
+	//				pixelColor /= static_cast<float>(m_samplesPerPixel);
+	//
+	//				pixelColor.r = std::sqrt(pixelColor.r);
+	//				pixelColor.g = std::sqrt(pixelColor.g);
+	//				pixelColor.b = std::sqrt(pixelColor.b);
+	//
+	//				const uint8_t r = static_cast<uint8_t>(256.f * Clamp(pixelColor.r, 0.f, 0.999f));
+	//				const uint8_t g = static_cast<uint8_t>(256.f * Clamp(pixelColor.g, 0.f, 0.999f));
+	//				const uint8_t b = static_cast<uint8_t>(256.f * Clamp(pixelColor.b, 0.f, 0.999f));
+	//
+	//				framebuffer[y * width + x] = RGBA(r, g, b);
+	//			}
+	//		});
+	//}
 
 	threadPool->WaitUntilFinished();
 }

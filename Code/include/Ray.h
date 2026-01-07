@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Color.h"
 #include "glm/vec3.hpp"
 
 class Hittable;

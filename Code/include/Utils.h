@@ -2,6 +2,8 @@
 #include <limits>
 #include <random>
 
+#include <glm/vec3.hpp>
+
 constexpr float infinity = std::numeric_limits<float>::infinity();
 
 inline float RandomFloat()
@@ -21,6 +23,11 @@ inline float Clamp(const float value, const float min, const float max)
 	return std::min(std::max(value, min), max);
 }
 
+inline float Length2(const glm::vec3& v)
+{
+    return v.x * v.x + v.y * v.y + v.z * v.z;
+}
+
 inline glm::vec3 RandomUnitVector()
 {
     constexpr float kMinLenSqr = std::numeric_limits<float>::min();
@@ -33,7 +40,7 @@ inline glm::vec3 RandomUnitVector()
             RandomFloat(-1.f, 1.f)
         );
 
-        const float lenSqr = p.x * p.x + p.y * p.y + p.z * p.z;
+        const float lenSqr = Length2(p);
         if (lenSqr > 1.f)
             continue;
 

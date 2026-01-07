@@ -1,7 +1,6 @@
 #pragma once
 #include "Utils.h"
-
-#include "glm/ext/scalar_common.hpp"
+#include "glm/common.hpp"
 
 class Interval
 {

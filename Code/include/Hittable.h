@@ -2,7 +2,8 @@
 
 #include "Ray.h"
 #include "Interval.h"
-#include "glm/vec3.hpp"
+
+class Material;
 
 class HitRecord
 {
@@ -11,6 +12,7 @@ public:
     glm::vec3 normal;
     float t;
     bool frontFace;
+	std::shared_ptr<Material> mat;
 
     void SetFaceNormal(const Ray& r, const glm::vec3& outwardNormal)
 	{

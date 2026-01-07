@@ -8,7 +8,6 @@
 #include "Color.h"
 #include "HittableList.h"
 #include "ThreadPool.h"
-#include "glm/vec3.hpp"
 #include "Sphere.h"
 
 class Sphere;
