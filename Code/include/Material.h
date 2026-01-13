@@ -33,3 +33,13 @@ private:
 	glm::vec3 m_albedo;
 	float m_fuzz;
 };
+
+class Dielectric : public Material
+{
+	public:
+	explicit Dielectric(const float refractiveIndex) : m_refractiveIndex(refractiveIndex) {}
+	bool Scatter(const Ray& inRay, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const override;
+private:
+	float m_refractiveIndex;
+	float Reflectance(const float cosine, const float refIdx) const;
+};

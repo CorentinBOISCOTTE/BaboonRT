@@ -41,6 +41,7 @@ void Application::Initialize(const HittableList& world, int samplesPerPixel, int
 		return;
 	}
 
+	m_framebuffer.reserve(m_width * m_height);
 	m_framebuffer.resize(m_width * m_height, 0xFF000000);
 
 	InitTexture();

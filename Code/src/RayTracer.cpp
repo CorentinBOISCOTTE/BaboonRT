@@ -53,7 +53,7 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	//	}
 	//}
 
-	constexpr int TILE = 64;
+	constexpr int TILE = 16;
 	
 	for (int ty = 0; ty < height; ty += TILE)
 	{
