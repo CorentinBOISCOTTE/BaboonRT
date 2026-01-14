@@ -2,6 +2,9 @@
 
 #include "Ray.h"
 #include "glm/detail/func_geometric.inl"
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
 
 Sphere::Sphere(const glm::vec3& center, const float radius, std::shared_ptr<Material> mat) : m_radius(std::fmaxf(0.f, radius)), m_center(center), m_mat(mat)
 {
@@ -10,6 +13,9 @@ Sphere::Sphere(const glm::vec3& center, const float radius, std::shared_ptr<Mate
 
 bool Sphere::Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped
+#endif
 	const float directionLength = static_cast<float>(glm::length(ray.GetDirection()));
 
 	const glm::vec3 oc = m_center - ray.GetOrigin();

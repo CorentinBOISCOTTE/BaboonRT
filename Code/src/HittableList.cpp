@@ -1,7 +1,13 @@
 #include "HittableList.h"
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
 
 bool HittableList::Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped
+#endif
 	HitRecord tempRec;
 	bool hitAnything = false;
 	float closestSoFar = interval.max;

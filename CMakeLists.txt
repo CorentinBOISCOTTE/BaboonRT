@@ -65,10 +65,16 @@ add_subdirectory(Libs)
 
 find_package(OpenGL REQUIRED)
 
-option ( TRACY_ENABLE "" ON )
-option ( TRACY_ON_DEMAND "" ON )
+set(TRACY_ENABLE OFF CACHE BOOL "Enable Tracy profiler" FORCE)
 
-target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL Tracy::TracyClient)
+if(TRACY_ENABLE)
+    option ( TRACY_ENABLE "" ON )
+    option ( TRACY_ON_DEMAND "" ON )
+    add_compile_definitions(TRACY_ENABLE)
+    message(STATUS "TRACY_ENABLE ON")
+endif()
+
+target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL)
 target_link_libraries(RayTracer PRIVATE glad)
 target_compile_definitions(RayTracer PUBLIC GLAD_GL_IMPLEMENTATION)
 

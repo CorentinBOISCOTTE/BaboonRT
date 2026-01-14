@@ -12,6 +12,9 @@
 #include "RayTracer.h"
 
 #include "spdlog/spdlog.h"
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
 
 void Application::Initialize(const HittableList& world, int samplesPerPixel, int rayDepth)
 {
@@ -74,6 +77,9 @@ void Application::Initialize(const HittableList& world, int samplesPerPixel, int
 
 void Application::Update()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped
+#endif
 	while (!glfwWindowShouldClose(m_window))
 	{
 		glfwPollEvents();
@@ -108,6 +114,9 @@ void Application::Update()
 		DrawScreen();
 
 		glfwSwapBuffers(m_window);
+#ifdef TRACY_ENABLE
+		FrameMark;
+#endif
 	}
 
 	Terminate();

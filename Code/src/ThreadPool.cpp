@@ -1,5 +1,9 @@
 #include "ThreadPool.h"
 
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
+
 ThreadPool::ThreadPool(const uint32_t nbThreads) : m_nbThreads(nbThreads)
 {
     for (uint32_t i = 0; i < m_nbThreads; i++)
@@ -20,6 +24,9 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::Enqueue(std::function<void()> const& func)
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped
+#endif
     m_tasksRemaining.fetch_add(1, std::memory_order_acq_rel);
     {
         std::unique_lock lock(m_queueMutex);
@@ -30,12 +37,18 @@ void ThreadPool::Enqueue(std::function<void()> const& func)
 
 void ThreadPool::WaitUntilFinished()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped
+#endif
     std::unique_lock lock(m_queueMutex);
     m_finishCondition.wait(lock, [this]() { return m_tasksRemaining.load(std::memory_order_acquire) == 0; });
 }
 
 void ThreadPool::CheckQueue()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped
+#endif
     while (true)
     {
         std::function<void()> task;

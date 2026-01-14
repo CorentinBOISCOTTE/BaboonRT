@@ -2,6 +2,9 @@
 
 #include "Ray.h"
 #include "Interval.h"
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
 
 class Material;
 
@@ -16,6 +19,9 @@ public:
 
     void SetFaceNormal(const Ray& r, const glm::vec3& outwardNormal)
 	{
+#ifdef TRACY_ENABLE
+        ZoneScoped
+#endif
         glm::vec3 rayDir = r.GetDirection();
         float dot = rayDir.x * outwardNormal.x +
                     rayDir.y * outwardNormal.y +

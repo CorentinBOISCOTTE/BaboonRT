@@ -4,9 +4,15 @@
 #include "Sphere.h"
 #include "Material.h"
 #include "glm/detail/func_geometric.inl"
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
 
 glm::vec3 Ray::RayColor(const Hittable& world, const int depth)
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped
+#endif
 	if (depth <= 0)
 		return glm::vec3(0.f);
 

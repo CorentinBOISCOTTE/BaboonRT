@@ -4,6 +4,9 @@
 #include "HittableList.h"
 #include "Ray.h"
 #include "ThreadPool.h"
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
 
 RayTracer::RayTracer(const int samplesPerPixel, int rayDepth) : m_samplesPerPixel(samplesPerPixel), m_rayDepth(rayDepth)
 {
@@ -13,6 +16,9 @@ RayTracer::RayTracer(const int samplesPerPixel, int rayDepth) : m_samplesPerPixe
 void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& framebuffer, const Camera* camera, ThreadPool* threadPool, const
                        HittableList& world)
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped
+#endif
 	const glm::vec3 pixel00Loc = camera->GetPixel00Loc();
 	const glm::vec3 cameraCenter = camera->GetCenter();
 	const float pixelWidth = camera->GetViewportWidth() / static_cast<float>(width);
@@ -53,7 +59,7 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	//	}
 	//}
 
-	constexpr int TILE = 16;
+	constexpr int TILE = 256;
 	
 	for (int ty = 0; ty < height; ty += TILE)
 	{
@@ -61,6 +67,9 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 		{
 			threadPool->Enqueue([ty, height, tx, width, pixel00Loc, pixelWidth, pixelHeight, cameraCenter, &framebuffer, &world, this]()
 				{
+#ifdef TRACY_ENABLE
+					ZoneScoped
+#endif
 					for (int y = ty; y < std::min(ty + TILE, static_cast<int>(height)); ++y)
 					{
 						for (int x = tx; x < std::min(tx + TILE, static_cast<int>(width)); ++x)
@@ -124,6 +133,9 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 
 Ray RayTracer::GetRay(const int x, const int y, const glm::vec3& pixel00Loc, const glm::vec3& cameraCenter, const float pixelWidth, const float pixelHeight)
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped
+#endif
 	const glm::vec3 offset = glm::vec3(RandomFloat() - 0.5f, RandomFloat() - 0.5f, 0.f);
 	const glm::vec3 pixelSample = pixel00Loc + ((static_cast<float>(x) + offset.x) * glm::vec3(pixelWidth, 0.f, 0.f)) + ((static_cast<float>(y) + offset.y) * glm::vec3(0.f, -pixelHeight, 0.f));
 
