@@ -25,3 +25,6 @@ add_library(glad STATIC
 target_include_directories(glad SYSTEM PUBLIC
     glad/include
 )
+
+# ----------- TRACY ----------- #
+add_subdirectory(tracy)

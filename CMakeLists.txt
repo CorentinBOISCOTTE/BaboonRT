@@ -65,7 +65,10 @@ add_subdirectory(Libs)
 
 find_package(OpenGL REQUIRED)
 
-target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL)
+option ( TRACY_ENABLE "" ON )
+option ( TRACY_ON_DEMAND "" ON )
+
+target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL Tracy::TracyClient)
 target_link_libraries(RayTracer PRIVATE glad)
 target_compile_definitions(RayTracer PUBLIC GLAD_GL_IMPLEMENTATION)
 
