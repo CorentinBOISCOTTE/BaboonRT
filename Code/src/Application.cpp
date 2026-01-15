@@ -16,7 +16,7 @@
 #include "tracy/Tracy.hpp"
 #endif
 
-void Application::Initialize(const HittableList& world, int samplesPerPixel, int rayDepth)
+void Application::Initialize(const HittableList& world, int rayDepth)
 {
 	if (!glfwInit())
 		return;
@@ -26,7 +26,7 @@ void Application::Initialize(const HittableList& world, int samplesPerPixel, int
 	m_lastTime = std::chrono::high_resolution_clock::now();
 
 	m_window = glfwCreateWindow(m_width, m_height, "BaboonRT", nullptr, nullptr);
-	m_rayTracer = new RayTracer(samplesPerPixel, rayDepth);
+	m_rayTracer = new RayTracer(rayDepth);
 
 	if (!m_window)
 	{

@@ -8,9 +8,8 @@
 #include "tracy/Tracy.hpp"
 #endif
 
-RayTracer::RayTracer(const int samplesPerPixel, int rayDepth) : m_samplesPerPixel(samplesPerPixel), m_rayDepth(rayDepth)
+RayTracer::RayTracer(int rayDepth) : m_rayDepth(rayDepth)
 {
-	pixelsSampleScale = 1.f / static_cast<float>(samplesPerPixel);
 }
 
 void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& framebuffer, const Camera* camera, ThreadPool* threadPool, const
@@ -23,6 +22,26 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	const glm::vec3 cameraCenter = camera->GetCenter();
 	const float pixelWidth = camera->GetViewportWidth() / static_cast<float>(width);
 	const float pixelHeight = camera->GetViewportHeight() / static_cast<float>(height);
+
+	const bool sizeChanged = (m_accumWidth != width) || (m_accumHeight != height);
+	const bool cameraChanged = (m_accumulatedFrames > 0) && (cameraCenter != m_lastCameraCenter);
+
+	if (sizeChanged)
+	{
+		m_accumWidth = width;
+		m_accumHeight = height;
+		m_accumBuffer.assign(static_cast<size_t>(width) * static_cast<size_t>(height), glm::vec3(0.0f));
+		m_accumulatedFrames = 0;
+	}
+
+	if (cameraChanged)
+	{
+		ResetAccumulation();
+	}
+
+	m_lastCameraCenter = cameraCenter;
+
+	constexpr int sppThisFrame = 1;
 
 	//(void)threadPool;
 	//for (uint16_t y = 0; y < height; ++y)
@@ -76,17 +95,23 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 						{
 							glm::vec3 pixelColor(0.0f);
 							
-							for (int i = 0; i < m_samplesPerPixel; ++i)
+							for (int i = 0; i < sppThisFrame; ++i)
 							{
 								Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
 								pixelColor += ray.RayColor(world, m_rayDepth);
 							}
 							
-							pixelColor /= static_cast<float>(m_samplesPerPixel);
+							pixelColor /= static_cast<float>(sppThisFrame);
+
+							const size_t idx = static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x);
+							m_accumBuffer[idx] += pixelColor;
+
+							const float inv = 1.0f / static_cast<float>(m_accumulatedFrames + 1);
+							glm::vec3 avg = m_accumBuffer[idx] * inv;
 							
-							pixelColor.r = std::sqrt(pixelColor.r);
-							pixelColor.g = std::sqrt(pixelColor.g);
-							pixelColor.b = std::sqrt(pixelColor.b);
+							pixelColor.r = std::sqrt(avg.r);
+							pixelColor.g = std::sqrt(avg.g);
+							pixelColor.b = std::sqrt(avg.b);
 							
 							const uint8_t r = static_cast<uint8_t>(256.f * Clamp(pixelColor.r, 0.f, 0.999f));
 							const uint8_t g = static_cast<uint8_t>(256.f * Clamp(pixelColor.g, 0.f, 0.999f));
@@ -129,6 +154,7 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	//}
 
 	threadPool->WaitUntilFinished();
+	++m_accumulatedFrames;
 }
 
 Ray RayTracer::GetRay(const int x, const int y, const glm::vec3& pixel00Loc, const glm::vec3& cameraCenter, const float pixelWidth, const float pixelHeight)
@@ -142,4 +168,10 @@ Ray RayTracer::GetRay(const int x, const int y, const glm::vec3& pixel00Loc, con
 	glm::vec3 rayDirection = pixelSample - cameraCenter;
 
 	return { cameraCenter, rayDirection };
+}
+
+void RayTracer::ResetAccumulation()
+{
+	m_accumulatedFrames = 0;
+	std::ranges::fill(m_accumBuffer, glm::vec3(0.0f));
 }

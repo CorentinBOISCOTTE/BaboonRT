@@ -25,7 +25,7 @@ public:
 		m_threadPool = new ThreadPool(numThreads);
     }
 
-	void Initialize(const HittableList& world, int samplesPerPixel, int rayDepth);
+	void Initialize(const HittableList& world, int rayDepth);
 	void Update();
 
 private:
