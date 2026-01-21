@@ -5,15 +5,16 @@
 #include "spdlog/spdlog.h"
 
 Camera::Camera(const uint16_t imageWidth, const uint16_t imageHeight, const float viewportHeight,
-               const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& up,
-	const float vFov) : m_viewportHeight(viewportHeight), m_fov(vFov), m_center(center), m_lookAt(lookAt), m_up(up), m_worldUp(up)
+               const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& up, const float defocusAngle, const float focusDistance,
+               const float vFov) : m_viewportHeight(viewportHeight), m_fov(vFov), m_center(center), m_lookAt(lookAt), m_up(up), m_defocusAngle(defocusAngle),
+		m_focusDistance(focusDistance)
 {
+	m_worldUp = m_up;
 	m_forward = glm::normalize(m_lookAt - m_center);
 	m_right = glm::normalize(glm::cross(m_forward, m_worldUp));
-	m_focalLength = static_cast<float>(glm::length((m_center - m_lookAt)));
 	float theta = glm::radians(m_fov);
 	float h = glm::tan(theta / 2.f);
-	m_viewportHeight = 2.f * h * m_focalLength;
+	m_viewportHeight = 2.f * h * m_focusDistance;
 	m_viewportWidth = (static_cast<float>(imageWidth) / static_cast<float>(imageHeight)) * m_viewportHeight;
 
 	m_w = glm::normalize(m_center - m_lookAt);
@@ -22,12 +23,16 @@ Camera::Camera(const uint16_t imageWidth, const uint16_t imageHeight, const floa
 
 	glm::vec3 horizontal = m_viewportWidth * m_u;
 	glm::vec3 vertical = m_viewportHeight * m_v;
-	glm::vec3 upperLeftCorner = m_center - (m_focalLength * m_w) - (horizontal / 2.f) + (vertical / 2.f);
+	glm::vec3 upperLeftCorner = m_center - (m_focusDistance * m_w) - (horizontal / 2.f) + (vertical / 2.f);
 
 	m_horizontalPixelDelta = horizontal / static_cast<float>(imageWidth);
 	m_verticalPixelDelta = vertical / static_cast<float>(imageHeight);
 
 	m_pixel00Loc = upperLeftCorner + 0.5f * (m_horizontalPixelDelta + m_verticalPixelDelta);
+
+	float defocusRadius = m_focusDistance * glm::tan(glm::radians(m_defocusAngle / 2.f));
+	m_horizontalDefocusDisk = defocusRadius * m_u;
+	m_verticalDefocusDisk = defocusRadius * m_v;
 }
 
 void Camera::RecordInputs(GLFWwindow* window, float deltaTime)
@@ -104,6 +109,9 @@ void Camera::LookInput(GLFWwindow* window, float deltaTime)
 	m_v = glm::cross(m_w, m_u);
 	glm::vec3 horizontal = m_viewportWidth * m_u;
 	glm::vec3 vertical = m_viewportHeight * m_v;
-	glm::vec3 upperLeftCorner = m_center - (m_focalLength * m_w) - (horizontal / 2.f) + (vertical / 2.f);
+	glm::vec3 upperLeftCorner = m_center - (m_focusDistance * m_w) - (horizontal / 2.f) + (vertical / 2.f);
 	m_pixel00Loc = upperLeftCorner + 0.5f * (m_horizontalPixelDelta + m_verticalPixelDelta);
+	float defocusRadius = m_focusDistance * glm::tan(glm::radians(m_defocusAngle / 2.f));
+	m_horizontalDefocusDisk = defocusRadius * m_u;
+	m_verticalDefocusDisk = defocusRadius * m_v;
 }

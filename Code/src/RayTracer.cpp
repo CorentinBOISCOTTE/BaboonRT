@@ -20,11 +20,14 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 #endif
 	const glm::vec3 pixel00Loc = camera->GetPixel00Loc();
 	const glm::vec3 cameraCenter = camera->GetCenter();
-	const float pixelWidth = camera->GetViewportWidth() / static_cast<float>(width);
-	const float pixelHeight = camera->GetViewportHeight() / static_cast<float>(height);
+	const glm::vec3 horizontalPixelDelta = camera->GetHorizontalPixelDelta();
+	const glm::vec3 verticalPixelDelta = camera->GetVerticalPixelDelta();
+	const glm::vec3 horizontalDefocusDisk = camera->GetHorizontalDefocusDisk();
+	const glm::vec3 verticalDefocusDisk = camera->GetVerticalDefocusDisk();
+	const float defocusAngle = camera->GetDefocusAngle();
 
 	const bool sizeChanged = (m_accumWidth != width) || (m_accumHeight != height);
-	const bool cameraChanged = (m_accumulatedFrames > 0) && (cameraCenter != m_lastCameraCenter);
+	const bool cameraChanged = (m_accumulatedFrames > 0) && ((cameraCenter != m_lastCameraCenter) || camera->HasRotated());
 
 	if (sizeChanged)
 	{
@@ -48,33 +51,31 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	//{
 	//	for (uint16_t x = 0; x < width; ++x)
 	//	{
-	//		float r = 0.f;
-	//		float g = 0.f;
-	//		float b = 0.f;
+	//		glm::vec3 pixelColor(0.0f);
 	//
-	//		for (int i = 0; i < m_samplesPerPixel; ++i)
+	//		for (int i = 0; i < sppThisFrame; ++i)
 	//		{
 	//			Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
-	//			ray.RayColor(world, r, g, b);
+	//			pixelColor += ray.RayColor(world, m_rayDepth);
 	//		}
 	//
-	//		const float scale = 1.0f / static_cast<float>(m_samplesPerPixel);
-	//		r *= scale;
-	//		g *= scale;
-	//		b *= scale;
+	//		pixelColor /= static_cast<float>(sppThisFrame);
 	//
-	//		//r = std::sqrt(r);
-	//		//g = std::sqrt(g);
-	//		//b = std::sqrt(b);
+	//		const size_t idx = static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x);
+	//		m_accumBuffer[idx] += pixelColor;
 	//
-	//		float min = 0.f;
-	//		float max = 0.999f;
+	//		const float inv = 1.0f / static_cast<float>(m_accumulatedFrames + 1);
+	//		glm::vec3 avg = m_accumBuffer[idx] * inv;
 	//
-	//		uint8_t red = static_cast<uint8_t>(256.f * Clamp(r, min, max));
-	//		uint8_t green = static_cast<uint8_t>(256.f * Clamp(g, min, max));
-	//		uint8_t blue = static_cast<uint8_t>(256.f * Clamp(b, min, max));
+	//		pixelColor.r = std::sqrt(avg.r);
+	//		pixelColor.g = std::sqrt(avg.g);
+	//		pixelColor.b = std::sqrt(avg.b);
 	//
-	//		framebuffer[y * width + x] = RGBA(red, green, blue);
+	//		const uint8_t r = static_cast<uint8_t>(256.f * Clamp(pixelColor.r, 0.f, 0.999f));
+	//		const uint8_t g = static_cast<uint8_t>(256.f * Clamp(pixelColor.g, 0.f, 0.999f));
+	//		const uint8_t b = static_cast<uint8_t>(256.f * Clamp(pixelColor.b, 0.f, 0.999f));
+	//
+	//		framebuffer[y * width + x] = RGBA(r, g, b);
 	//	}
 	//}
 
@@ -84,7 +85,9 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	{
 		for (int tx = 0; tx < width; tx += TILE)
 		{
-			threadPool->Enqueue([ty, height, tx, width, pixel00Loc, pixelWidth, pixelHeight, cameraCenter, &framebuffer, &world, this]()
+			threadPool->Enqueue(
+				[ty, height, tx, width, pixel00Loc, horizontalPixelDelta, verticalPixelDelta, horizontalDefocusDisk,
+					verticalDefocusDisk, defocusAngle, cameraCenter, &framebuffer, &world, this]()
 				{
 #ifdef TRACY_ENABLE
 					ZoneScoped
@@ -97,15 +100,15 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 							
 							for (int i = 0; i < sppThisFrame; ++i)
 							{
-								Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
+								Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, horizontalPixelDelta, verticalPixelDelta, horizontalDefocusDisk, verticalDefocusDisk, defocusAngle);
 								pixelColor += ray.RayColor(world, m_rayDepth);
 							}
 							
 							pixelColor /= static_cast<float>(sppThisFrame);
-
+	
 							const size_t idx = static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x);
 							m_accumBuffer[idx] += pixelColor;
-
+	
 							const float inv = 1.0f / static_cast<float>(m_accumulatedFrames + 1);
 							glm::vec3 avg = m_accumBuffer[idx] * inv;
 							
@@ -132,17 +135,23 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	//			{
 	//				glm::vec3 pixelColor(0.0f);
 	//
-	//				for (int i = 0; i < m_samplesPerPixel; ++i)
+	//				for (int i = 0; i < sppThisFrame; ++i)
 	//				{
 	//					Ray ray = GetRay(x, y, pixel00Loc, cameraCenter, pixelWidth, pixelHeight);
 	//					pixelColor += ray.RayColor(world, m_rayDepth);
 	//				}
 	//
-	//				pixelColor /= static_cast<float>(m_samplesPerPixel);
+	//				pixelColor /= static_cast<float>(sppThisFrame);
 	//
-	//				pixelColor.r = std::sqrt(pixelColor.r);
-	//				pixelColor.g = std::sqrt(pixelColor.g);
-	//				pixelColor.b = std::sqrt(pixelColor.b);
+	//				const size_t idx = static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x);
+	//				m_accumBuffer[idx] += pixelColor;
+	//
+	//				const float inv = 1.0f / static_cast<float>(m_accumulatedFrames + 1);
+	//				glm::vec3 avg = m_accumBuffer[idx] * inv;
+	//
+	//				pixelColor.r = std::sqrt(avg.r);
+	//				pixelColor.g = std::sqrt(avg.g);
+	//				pixelColor.b = std::sqrt(avg.b);
 	//
 	//				const uint8_t r = static_cast<uint8_t>(256.f * Clamp(pixelColor.r, 0.f, 0.999f));
 	//				const uint8_t g = static_cast<uint8_t>(256.f * Clamp(pixelColor.g, 0.f, 0.999f));
@@ -157,17 +166,28 @@ void RayTracer::Render(uint16_t width, uint16_t height, std::vector<Color>& fram
 	++m_accumulatedFrames;
 }
 
-Ray RayTracer::GetRay(const int x, const int y, const glm::vec3& pixel00Loc, const glm::vec3& cameraCenter, const float pixelWidth, const float pixelHeight)
+Ray RayTracer::GetRay(const int x, const int y, const glm::vec3& pixel00Loc, const glm::vec3& cameraCenter,
+                      const glm::vec3& horizontalPixelDelta, const glm::vec3& verticalPixelDelta,
+                      const glm::vec3& horizontalDefocusDisk, const glm::vec3& verticalDefocusDisk, const float defocusAngle)
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped
 #endif
 	const glm::vec3 offset = glm::vec3(RandomFloat() - 0.5f, RandomFloat() - 0.5f, 0.f);
-	const glm::vec3 pixelSample = pixel00Loc + ((static_cast<float>(x) + offset.x) * glm::vec3(pixelWidth, 0.f, 0.f)) + ((static_cast<float>(y) + offset.y) * glm::vec3(0.f, -pixelHeight, 0.f));
+	const float sx = static_cast<float>(x) + offset.x;
+	const float sy = static_cast<float>(y) + offset.y;
 
-	glm::vec3 rayDirection = pixelSample - cameraCenter;
+	const glm::vec3 pixelSample = pixel00Loc + (sx * horizontalPixelDelta) - (sy * verticalPixelDelta);
+	const glm::vec3 rayOrigin = (defocusAngle <= 0.f) ? cameraCenter : DefocusDiskSample(cameraCenter, horizontalDefocusDisk, verticalDefocusDisk);
+	const glm::vec3 rayDirection = pixelSample - rayOrigin;
 
 	return { cameraCenter, rayDirection };
+}
+
+glm::vec3 RayTracer::DefocusDiskSample(const glm::vec3& cameraCenter, const glm::vec3& horizontalDefocusDisk, const glm::vec3& verticalDefocusDisk)
+{
+	const glm::vec3 p = RandomInUnitDisk();
+	return (p.x * horizontalDefocusDisk) + (p.y * verticalDefocusDisk) + cameraCenter;
 }
 
 void RayTracer::ResetAccumulation()

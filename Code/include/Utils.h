@@ -55,3 +55,14 @@ inline glm::vec3 RandomOnHemisphere(const glm::vec3& normal)
 
 	return -inUnitSphere;
 }
+
+inline glm::vec3 RandomInUnitDisk()
+{
+    while (true)
+    {
+        const glm::vec3 p = glm::vec3(RandomFloat(-1.f, 1.f), RandomFloat(-1.f, 1.f), 0.f);
+        if (Length2(p) >= 1.f)
+            continue;
+        return p;
+    }
+}

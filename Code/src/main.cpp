@@ -26,13 +26,14 @@ int main()
 	auto material_bubble = std::make_shared<Dielectric>(1.f / 1.5f);
 	auto material_right = std::make_shared<Metal>(glm::vec3(0.8f, 0.6f, 0.2f), 1.f);
 
-	world.Add(std::make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0, material_ground));
+	//world.Add(std::make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0, material_ground));
 	world.Add(std::make_shared<Sphere>(glm::vec3(0.0, 0.0, -2.2), 0.2, material_center));
 	world.Add(std::make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.5), 0.3, material_left));
 	//world.Add(std::make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.4, material_bubble));
 	world.Add(std::make_shared<Sphere>(glm::vec3(1.0, 0.0, -2.0), 0.5, material_right));
 
-	Application app(std::thread::hardware_concurrency() - 4, 1920, 1080, 2.f, glm::vec3(-0.75f, 0.f, 0.f), 1.f, 90.f);
+	Application app(std::thread::hardware_concurrency() - 4, 1920, 1080, 2.f, glm::vec3(0.f, 0.f, 0.f),
+	                glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 1.f, 0.f), 0.25f, 2.f, 45.f);
 
 	app.Initialize(world, 4);
 
