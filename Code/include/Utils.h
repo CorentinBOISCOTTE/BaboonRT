@@ -4,6 +4,8 @@
 
 #include <glm/vec3.hpp>
 
+#include "glm/ext/scalar_constants.hpp"
+
 constexpr float infinity = std::numeric_limits<float>::infinity();
 
 inline float RandomFloat()
@@ -30,25 +32,15 @@ inline float Length2(const glm::vec3& v)
 
 inline glm::vec3 RandomUnitVector()
 {
-    constexpr float kMinLenSqr = std::numeric_limits<float>::min();
+    const float z = RandomFloat(-1.0f, 1.0f);
+    const float a = RandomFloat(0.0f, 2.0f * glm::pi<float>());
 
-    while (true)
-    {
-        const glm::vec3 p = glm::vec3(
-            RandomFloat(-1.f, 1.f),
-            RandomFloat(-1.f, 1.f),
-            RandomFloat(-1.f, 1.f)
-        );
-
-        const float lenSqr = Length2(p);
-        if (lenSqr > 1.f)
-            continue;
-
-        if (lenSqr < kMinLenSqr)
-            continue;
-
-        return p / std::sqrt(lenSqr);
-    }
+    const float r = std::sqrt(1.0f - z * z);
+    return {
+	    r * std::cos(a),
+        r * std::sin(a),
+        z
+    };
 }
 
 inline glm::vec3 RandomOnHemisphere(const glm::vec3& normal)
