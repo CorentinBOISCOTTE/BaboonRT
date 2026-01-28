@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AABB.h"
 #include "Ray.h"
 #include "Interval.h"
 #ifdef TRACY_ENABLE
@@ -37,4 +38,6 @@ public:
     virtual ~Hittable() = default;
 
     virtual bool Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const = 0;
+
+	virtual AABB BoundingBox() const = 0;
 };

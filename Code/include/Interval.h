@@ -30,4 +30,10 @@ public:
     {
     	return glm::clamp(x, min, max);
     }
+
+	Interval Expand(const float delta) const
+    {
+		const float padding = delta * 0.5f;
+        return { min - padding, max + padding };
+    }
 };

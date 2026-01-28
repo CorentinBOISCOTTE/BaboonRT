@@ -14,10 +14,13 @@ class Sphere : public Hittable
 
 	bool Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const override;
 
+	virtual AABB BoundingBox() const override { return m_bbox; }
+
 	void SetPosition(const glm::vec3& newPos) { m_center = newPos; }
 
 private:
 	float m_radius = 1.0f;
 	glm::vec3 m_center = glm::vec3(0.0f);
 	std::shared_ptr<Material> m_mat;
+	AABB m_bbox;
 };

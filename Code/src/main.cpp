@@ -33,7 +33,7 @@ int main()
 	world.Add(std::make_shared<Sphere>(glm::vec3(1.0, 0.0, -2.0), 0.5, material_right));
 
 	Application app(std::thread::hardware_concurrency() - 4, 1920, 1080, 2.f, glm::vec3(0.f, 0.f, 0.f),
-	                glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 1.f, 0.f), 0.25f, 2.f, 45.f);
+	                glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 1.f, 0.f), 0.1f, 2.f, 45.f);
 
 	app.Initialize(world, 4);
 
