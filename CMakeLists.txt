@@ -72,6 +72,7 @@ if(TRACY_ENABLE)
     option ( TRACY_ON_DEMAND "" ON )
     add_compile_definitions(TRACY_ENABLE)
     message(STATUS "TRACY_ENABLE ON")
+    target_link_libraries(RayTracer PRIVATE Tracy::TracyClient)
 endif()
 
 target_link_libraries(RayTracer PUBLIC glm::glm glfw spdlog OpenGL::GL)

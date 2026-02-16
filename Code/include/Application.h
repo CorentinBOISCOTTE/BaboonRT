@@ -18,14 +18,15 @@ class Application
 public:
 	Application() = default;
 	~Application() = default;
-	Application(uint32_t numThreads, const uint16_t width, const uint16_t height, const float viewportHeight, const glm::vec3& center, const float focalLength = 1.f, const float vFov = 90.f)
+	Application(const uint32_t numThreads, const uint16_t width, const uint16_t height, const float viewportHeight,
+	            const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& up, const float defocusAngle, const float focusDistance, const float vFov = 90.f)
         : m_width(width), m_height(height), m_window(nullptr)
 	{
-        m_camera = new Camera(width, height, viewportHeight, center, focalLength, vFov);
+        m_camera = new Camera(width, height, viewportHeight, center, lookAt, up, defocusAngle, focusDistance, vFov);
 		m_threadPool = new ThreadPool(numThreads);
     }
 
-	void Initialize(const HittableList& world, int samplesPerPixel, int rayDepth);
+	void Initialize(const HittableList& world, int rayDepth);
 	void Update();
 
 private:
@@ -49,7 +50,6 @@ private:
 
     void Terminate() const;
     void CloseWindowInput() const;
-    void CameraInput() const;
     void UpdateDeltaTime();
 
     void InitScreenQuad();

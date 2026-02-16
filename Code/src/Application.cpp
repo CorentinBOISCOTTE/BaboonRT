@@ -16,7 +16,7 @@
 #include "tracy/Tracy.hpp"
 #endif
 
-void Application::Initialize(const HittableList& world, int samplesPerPixel, int rayDepth)
+void Application::Initialize(const HittableList& world, int rayDepth)
 {
 	if (!glfwInit())
 		return;
@@ -26,7 +26,7 @@ void Application::Initialize(const HittableList& world, int samplesPerPixel, int
 	m_lastTime = std::chrono::high_resolution_clock::now();
 
 	m_window = glfwCreateWindow(m_width, m_height, "BaboonRT", nullptr, nullptr);
-	m_rayTracer = new RayTracer(samplesPerPixel, rayDepth);
+	m_rayTracer = new RayTracer(rayDepth);
 
 	if (!m_window)
 	{
@@ -85,7 +85,7 @@ void Application::Update()
 		glfwPollEvents();
 		CloseWindowInput();
 		UpdateDeltaTime();
-		CameraInput();
+		m_camera->RecordInputs(m_window, m_deltaTime);
 
 		m_rayTracer->Render(m_width, m_height, m_framebuffer, m_camera, m_threadPool, m_world);
 
@@ -147,22 +147,6 @@ void Application::CloseWindowInput() const
 	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(m_window, true);
 
-}
-
-void Application::CameraInput() const
-{
-	glm::vec3 move = glm::vec3(0.f);
-
-	if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS)
-		move.z -= 5.f;
-	if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		move.z += 5.f;
-	if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		move.x += 5.f;
-	if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		move.x -= 5.f;
-
-	m_camera->Move(move * m_deltaTime);
 }
 
 void Application::UpdateDeltaTime()
