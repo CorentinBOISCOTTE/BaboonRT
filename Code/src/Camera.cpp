@@ -6,8 +6,8 @@
 
 Camera::Camera(const uint16_t imageWidth, const uint16_t imageHeight, const float viewportHeight,
                const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& up, const float defocusAngle, const float focusDistance,
-               const float vFov) : m_viewportHeight(viewportHeight), m_fov(vFov), m_center(center), m_lookAt(lookAt), m_up(up), m_defocusAngle(defocusAngle),
-		m_focusDistance(focusDistance)
+               const float vFov, const float sensitivity) : m_viewportHeight(viewportHeight), m_fov(vFov), m_center(center), m_lookAt(lookAt), m_up(up), m_defocusAngle(defocusAngle),
+			   m_focusDistance(focusDistance), m_imageHeight(imageHeight), m_imageWidth(imageWidth), m_sensitivity(sensitivity)
 {
 	m_worldUp = m_up;
 	m_forward = glm::normalize(m_lookAt - m_center);
@@ -25,8 +25,8 @@ Camera::Camera(const uint16_t imageWidth, const uint16_t imageHeight, const floa
 	glm::vec3 vertical = m_viewportHeight * m_v;
 	glm::vec3 upperLeftCorner = m_center - (m_focusDistance * m_w) - (horizontal / 2.f) + (vertical / 2.f);
 
-	m_horizontalPixelDelta = horizontal / static_cast<float>(imageWidth);
-	m_verticalPixelDelta = vertical / static_cast<float>(imageHeight);
+	m_horizontalPixelDelta = horizontal / static_cast<float>(m_imageWidth);
+	m_verticalPixelDelta = vertical / static_cast<float>(m_imageHeight);
 
 	m_pixel00Loc = upperLeftCorner + 0.5f * (m_horizontalPixelDelta + m_verticalPixelDelta);
 
@@ -48,7 +48,7 @@ void Camera::RecordInputs(GLFWwindow* window, float deltaTime)
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	LookInput(window, deltaTime);
+	LookInput(window);
 }
 
 void Camera::MoveInputs(GLFWwindow* window, float deltaTime)
@@ -67,31 +67,29 @@ void Camera::MoveInputs(GLFWwindow* window, float deltaTime)
 	Move(move * deltaTime);
 }
 
-void Camera::LookInput(GLFWwindow* window, float deltaTime)
+void Camera::LookInput(GLFWwindow* window)
 {
-	(void)deltaTime;
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	spdlog::info("Mouse Position: X: {}, Y: {}", xpos, ypos);
 	if (m_firstMouseInput)
 	{
 		m_previousMousePos = glm::vec2(static_cast<float>(xpos), static_cast<float>(ypos));
 		m_firstMouseInput = false;
 	}
 	m_deltaMousePos.x = static_cast<float>(xpos) - m_previousMousePos.x;
-	m_deltaMousePos.y = static_cast<float>(ypos) - m_previousMousePos.y; // reversed since y-coordinates go from bottom to top
+	m_deltaMousePos.y = static_cast<float>(ypos) - m_previousMousePos.y;
 
 	m_previousMousePos = glm::vec2(static_cast<float>(xpos), static_cast<float>(ypos));
 
-	m_hasRotated = m_deltaMousePos.x > 0.001f || m_deltaMousePos.y > 0.001f;
+	m_hasRotated = fabsf(m_deltaMousePos.x) > 0.001f || fabsf(m_deltaMousePos.y) > 0.001f;
 
 	if (!m_hasRotated)
 		return;
 	
-	float pitch = m_deltaMousePos.y;
-	float yaw = m_deltaMousePos.x;
+	float pitch = m_deltaMousePos.y * m_sensitivity;
+	float yaw = m_deltaMousePos.x * m_sensitivity;
 
-	m_worldPitch += pitch;
+	m_worldPitch -= pitch;
 	m_worldYaw += yaw;
 
 	m_worldPitch = glm::clamp(m_worldPitch, -89.f, 89.f);
@@ -110,6 +108,8 @@ void Camera::LookInput(GLFWwindow* window, float deltaTime)
 	glm::vec3 horizontal = m_viewportWidth * m_u;
 	glm::vec3 vertical = m_viewportHeight * m_v;
 	glm::vec3 upperLeftCorner = m_center - (m_focusDistance * m_w) - (horizontal / 2.f) + (vertical / 2.f);
+	m_horizontalPixelDelta = horizontal / static_cast<float>(m_imageWidth);
+	m_verticalPixelDelta = vertical / static_cast<float>(m_imageHeight);
 	m_pixel00Loc = upperLeftCorner + 0.5f * (m_horizontalPixelDelta + m_verticalPixelDelta);
 	float defocusRadius = m_focusDistance * glm::tan(glm::radians(m_defocusAngle / 2.f));
 	m_horizontalDefocusDisk = defocusRadius * m_u;
