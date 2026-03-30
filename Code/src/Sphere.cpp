@@ -8,7 +8,8 @@
 
 Sphere::Sphere(const glm::vec3& center, const float radius, std::shared_ptr<Material> mat) : m_radius(std::fmaxf(0.f, radius)), m_center(center), m_mat(mat)
 {
-	
+	glm::vec3 radiusVec = glm::vec3(radius);
+	m_bbox = AABB(center - radiusVec, center + radiusVec);
 }
 
 bool Sphere::Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const

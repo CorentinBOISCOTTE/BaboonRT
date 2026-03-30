@@ -3,6 +3,9 @@
 #include "Ray.h"
 #include "spdlog/spdlog.h"
 
+const AABB AABB::empty = AABB(Interval::empty, Interval::empty, Interval::empty);
+const AABB AABB::universe = AABB(Interval::universe, Interval::universe, Interval::universe);
+
 AABB::AABB(const glm::vec3& min, const glm::vec3& max)
 {
 	x = (min.x <= max.x) ? Interval(min.x, max.x) : Interval(max.x, min.x);
@@ -54,4 +57,12 @@ bool AABB::Hit(const Ray& ray, Interval t) const
 			return false;
 	}
 	return true;
+}
+
+int AABB::LongestAxis() const
+{
+	if (x.Size() > y.Size())
+		return x.Size() > z.Size() ? 0 : 2;
+	else
+		return y.Size() > z.Size() ? 1 : 2;
 }

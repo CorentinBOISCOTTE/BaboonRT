@@ -39,5 +39,8 @@ public:
 
     virtual bool Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const = 0;
 
-	virtual AABB BoundingBox() const = 0;
+    virtual AABB BoundingBox() const { return m_bbox; }
+
+protected:
+    AABB m_bbox;
 };

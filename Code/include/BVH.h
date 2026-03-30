@@ -6,12 +6,17 @@
 
 class BVHNode : public Hittable
 {
+public:
 	BVHNode(HittableList list);
-	BVHNode(const std::vector<std::shared_ptr<Hittable>>& objects, size_t start, size_t end);
+	BVHNode(std::vector<std::shared_ptr<Hittable>> objects, size_t start, size_t end);
 	bool Hit(const Ray& ray, const Interval& interval, HitRecord& rec) const override;
-	AABB BoundingBox() const override { return m_bbox; }
+
 private:
 	std::shared_ptr<Hittable> m_left;
 	std::shared_ptr<Hittable> m_right;
-	AABB m_bbox;
+
+    static bool BoxCompare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b, int axis_index);
+    static bool BoxXCompare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b) { return BoxCompare(a, b, 0); }
+    static bool BoxYCompare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b) { return BoxCompare(a, b, 1); }
+    static bool BoxZCompare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b) { return BoxCompare(a, b, 2); }
 };

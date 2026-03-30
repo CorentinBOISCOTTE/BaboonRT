@@ -36,4 +36,6 @@ public:
 		const float padding = delta * 0.5f;
         return { min - padding, max + padding };
     }
+
+    static const class Interval empty, universe;
 };

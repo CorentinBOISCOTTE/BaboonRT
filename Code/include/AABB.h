@@ -21,6 +21,10 @@ public:
 
 	[[nodiscard]] bool Hit(const Ray& ray, Interval t) const;
 
+	[[nodiscard]] int LongestAxis() const;
+
 	[[nodiscard]] glm::vec3 Min() const { return {x.min, y.min, z.min}; }
 	[[nodiscard]] glm::vec3 Max() const { return {x.max, y.max, z.max}; }
+
+	static const class AABB empty, universe;
 };
