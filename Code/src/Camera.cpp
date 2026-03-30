@@ -43,6 +43,7 @@ void Camera::RecordInputs(GLFWwindow* window, float deltaTime)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		m_firstMouseInput = true;
+		m_hasRotated = false;
 		return;
 	}
 
