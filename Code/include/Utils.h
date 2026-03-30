@@ -20,6 +20,11 @@ inline float RandomFloat(const float min, const float max)
     return min + (max - min) * RandomFloat();
 }
 
+inline int RandomInt(const int min, const int max)
+{
+    return static_cast<int>(RandomFloat(min, max + 1));
+}
+
 inline float Clamp(const float value, const float min, const float max)
 {
 	return std::min(std::max(value, min), max);

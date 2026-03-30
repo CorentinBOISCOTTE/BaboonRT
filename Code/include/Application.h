@@ -19,10 +19,10 @@ public:
 	Application() = default;
 	~Application() = default;
 	Application(const uint32_t numThreads, const uint16_t width, const uint16_t height, const float viewportHeight,
-	            const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& up, const float defocusAngle, const float focusDistance, const float vFov = 90.f)
+	            const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& up, const float defocusAngle, const float focusDistance, const float vFov = 90.f, const float sensitivity = 0.1f)
         : m_width(width), m_height(height), m_window(nullptr)
 	{
-        m_camera = new Camera(width, height, viewportHeight, center, lookAt, up, defocusAngle, focusDistance, vFov);
+        m_camera = new Camera(width, height, viewportHeight, center, lookAt, up, defocusAngle, focusDistance, vFov, sensitivity);
 		m_threadPool = new ThreadPool(numThreads);
     }
 

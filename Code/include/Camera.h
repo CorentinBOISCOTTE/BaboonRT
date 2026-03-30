@@ -8,7 +8,7 @@ class Camera
 {
 public:
 	Camera(const uint16_t imageWidth, const uint16_t imageHeight, const float viewportHeight, const glm::vec3& center,
-	       const glm::vec3& lookAt, const glm::vec3& up, const float defocusAngle, const float focusDistance, const float vFov = 90.f);
+	       const glm::vec3& lookAt, const glm::vec3& up, const float defocusAngle, const float focusDistance, const float vFov = 90.f, const float sensitivity = 0.1f);
 	~Camera() = default;
 
 	[[nodiscard]] const float& GetViewportWidth() const { return m_viewportWidth; }
@@ -41,7 +41,9 @@ private:
 	float m_worldPitch = 0.f;
 	float m_worldYaw = 0.f;
 	float m_defocusAngle, m_focusDistance;
+	float m_imageHeight, m_imageWidth;
+	float m_sensitivity;
 
 	void MoveInputs(GLFWwindow* window, float deltaTime);
-	void LookInput(GLFWwindow* window, float deltaTime);
+	void LookInput(GLFWwindow* window);
 };
